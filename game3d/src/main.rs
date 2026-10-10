@@ -155,14 +155,7 @@ async fn main(){
             ..Default::default()
         };
         
-        /*draw_cylinder(
-            vec3(2.0,0.5,0.0),
-            0.5, //radius top
-            0.5, // radius bottom
-            0.05, //height
-            None,
-            GOLD
-        );*/
+    
 
        
         draw_grid(20,1.0,GRAY, DARKGRAY);
@@ -184,7 +177,18 @@ async fn main(){
             //println!("{:#?}",obj);
         }
         if is_key_pressed(KeyCode::Space) && objects.len()>5{
-            objects.remove(5); // I can delete a coin from the list of objects, but I need to make sure that the index is valid. The first 5 objects are the camera and the cube, so I can only remove coins starting from index 5.
+            objects.remove(5); 
+        }
+
+        let mut coin_to_remove = None;
+        for (index, position) in coin_positions.iter().enumerate() {
+            let cube_pos = cube.cube_position;
+            let coin_pos = *position;
+            let distance = cube_pos.distance(coin_pos);
+            if distance <= 1.0 && objects.len() > index+2{
+                coin_to_remove = Some(index);
+                break;
+            }
         }
         if is_key_down(KeyCode::Escape){
             break;
