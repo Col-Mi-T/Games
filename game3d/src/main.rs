@@ -158,7 +158,7 @@ async fn main(){
     
 
        
-        draw_grid(20,1.0,GRAY, DARKGRAY);
+        
                 
         let mut coin_id = 0;
         for obj in &objects{
@@ -176,10 +176,24 @@ async fn main(){
             }
             //println!("{:#?}",obj);
         }
+        draw_grid(20,1.0,GRAY, DARKGRAY);
+        
+        set_default_camera();
+        draw_text("Cube Collector", 20.0, 30.0, 30.0, WHITE);
+        let font_size = 20.0;
+        let text = "Use W,A,S,D or Arrow Keys to move the character";
+        let text_width = measure_text(text, None, font_size as u16, 1.0).width;
+        draw_text(
+            "Use W,A,S,D or Arrow Keys to move the character",
+            screen_width() - text_width - 20.0,
+            screen_height() - 20.0,
+            font_size,
+            WHITE,
+        );
         if is_key_pressed(KeyCode::Space) && objects.len()>5{
             objects.remove(5); 
         }
-
+        
         let mut coin_to_remove = None;
         for (index, position) in coin_positions.iter().enumerate() {
             let cube_pos = cube.cube_position;
@@ -190,6 +204,13 @@ async fn main(){
                 break;
             }
         }
+        if let Some(index) =  coin_to_remove{
+            objects.remove(index + 2); // Remove the coin from the objects vector
+            coin_positions.remove(index); // Remove the coin position from the coin_positions vector
+        // Check collision with THIS coin
+        }
+
+
         if is_key_down(KeyCode::Escape){
             break;
         }
