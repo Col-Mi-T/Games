@@ -1,5 +1,8 @@
-use macroquad::prelude::*;
+/*
+A simple Cube Collection 3d Game for an introduction to 3d game development from scratch
+*/
 
+use macroquad::prelude::*;
 use ::rand::RngExt;
 
 fn window_conf() -> Conf{
@@ -180,18 +183,35 @@ async fn main(){
         
         set_default_camera();
         draw_text("Cube Collector", 20.0, 30.0, 30.0, WHITE);
+        draw_text("Collect all the coins!", 20.0, 60.0, 20.0, WHITE);  //x, y, font, color
+        let progress = format!("Coins collected: {}/10", 10-coin_positions.len());
+        draw_text(progress,20.0,90.0,20.0,WHITE);
+
         let font_size = 20.0;
         let text = "Use W,A,S,D or Arrow Keys to move the character";
         let text_width = measure_text(text, None, font_size as u16, 1.0).width;
+
         draw_text(
-            "Use W,A,S,D or Arrow Keys to move the character",
+            text,
             screen_width() - text_width - 20.0,
             screen_height() - 20.0,
             font_size,
             WHITE,
         );
-        if is_key_pressed(KeyCode::Space) && objects.len()>5{
-            objects.remove(5); 
+
+        let message = "You Collected All the coins!";
+        let font_size = 50.0;
+
+        let text_size = measure_text(message, None, font_size as u16, 1.0);
+
+        if 10-coin_positions.len() == 10{
+            draw_text(
+                message,
+                (screen_width() - text_size.width) / 2.0,
+                (screen_height() + text_size.height) / 2.0,
+                font_size,
+                GREEN,
+            );
         }
         
         let mut coin_to_remove = None;
@@ -214,17 +234,18 @@ async fn main(){
         if is_key_down(KeyCode::Escape){
             break;
         }
-        if is_key_down(KeyCode::W) || is_key_down(KeyCode::Up){
-            cube.cube_position.z -= 0.1;
+        
+        if is_key_down(KeyCode::W) || is_key_down(KeyCode::Up) && cube.cube_position.z > -10.0{
+            cube.cube_position.z -= 0.1; //foward
         }
-        if is_key_down(KeyCode::S)||is_key_down(KeyCode::Down){
-            cube.cube_position.z += 0.1;
+        if is_key_down(KeyCode::S)||is_key_down(KeyCode::Down) && cube.cube_position.z < 10.0{
+            cube.cube_position.z += 0.1; //backward
         }
-        if is_key_down(KeyCode::A)||is_key_down(KeyCode::Left){
-            cube.cube_position.x -= 0.1;
+        if is_key_down(KeyCode::A)||is_key_down(KeyCode::Left)&& cube.cube_position.x > -10.0{
+            cube.cube_position.x -= 0.1; //left
         }
-        if is_key_down(KeyCode::D)||is_key_down(KeyCode::Right){
-            cube.cube_position.x += 0.1;
+        if is_key_down(KeyCode::D)||is_key_down(KeyCode::Right)&& cube.cube_position.x < 10.0{
+            cube.cube_position.x += 0.1; //right
         }
         next_frame().await;
     }
