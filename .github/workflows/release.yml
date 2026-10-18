@@ -35,23 +35,21 @@ jobs:
 
       - name: Create zip files
         run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
             mkdir -p cube-collector-windows
-            # Updated paths to pull from game3d/target/
             cp game3d/target/release/cube_collector.exe cube-collector-windows/cube_collector.exe
             powershell -Command "Compress-Archive -Path cube-collector-windows -DestinationPath cube-collector-windows-${{ steps.version.outputs.VERSION }}.zip"
-          elif [ "$RUNNER_OS" == "Linux" ]; then
+          elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
             mkdir -p cube-collector-linux
-            # Updated paths to pull from game3d/target/
             cp game3d/target/release/cube_collector cube-collector-linux/cube_collector
             zip -r cube-collector-linux-${{ steps.version.outputs.VERSION }}.zip cube-collector-linux
-          elif [ "$RUNNER_OS" == "macOS" ]; then
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
             mkdir -p cube-collector-macos
-            # Updated paths to pull from game3d/target/
             cp game3d/target/release/cube_collector cube-collector-macos/cube_collector
             zip -r cube-collector-macos-${{ steps.version.outputs.VERSION }}.zip cube-collector-macos
           fi
         shell: bash
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
