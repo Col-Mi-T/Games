@@ -21,10 +21,12 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.os }}
+          # Changed to include the subfolder so the cache tracks game3d files
+          key: ${{ matrix.os }}-game3d
 
       - name: Build Cube Collector
-        run: cargo build --release
+        # Added --manifest-path so Cargo builds from your subfolder
+        run: cargo build --release --manifest-path game3d/Cargo.toml
 
       - name: Extract version
         id: version
@@ -35,15 +37,18 @@ jobs:
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
             mkdir -p cube-collector-windows
-            cp target/release/cube_collector.exe cube-collector-windows/cube_collector.exe
+            # Updated paths to pull from game3d/target/
+            cp game3d/target/release/cube_collector.exe cube-collector-windows/cube_collector.exe
             powershell -Command "Compress-Archive -Path cube-collector-windows -DestinationPath cube-collector-windows-${{ steps.version.outputs.VERSION }}.zip"
           elif [ "$RUNNER_OS" == "Linux" ]; then
             mkdir -p cube-collector-linux
-            cp target/release/cube_collector cube-collector-linux/cube_collector
+            # Updated paths to pull from game3d/target/
+            cp game3d/target/release/cube_collector cube-collector-linux/cube_collector
             zip -r cube-collector-linux-${{ steps.version.outputs.VERSION }}.zip cube-collector-linux
           elif [ "$RUNNER_OS" == "macOS" ]; then
             mkdir -p cube-collector-macos
-            cp target/release/cube_collector cube-collector-macos/cube_collector
+            # Updated paths to pull from game3d/target/
+            cp game3d/target/release/cube_collector cube-collector-macos/cube_collector
             zip -r cube-collector-macos-${{ steps.version.outputs.VERSION }}.zip cube-collector-macos
           fi
         shell: bash
