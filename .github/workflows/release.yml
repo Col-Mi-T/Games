@@ -1,0 +1,78 @@
+name: Build & Release Cube Collector
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  Build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
+
+      - name: Build Cube Collector
+        run: cargo build --release
+
+      - name: Extract version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Create zip files
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            mkdir -p cube-collector-windows
+            cp target/release/cube_collector.exe cube-collector-windows/cube_collector.exe
+            powershell -Command "Compress-Archive -Path cube-collector-windows -DestinationPath cube-collector-windows-${{ steps.version.outputs.VERSION }}.zip"
+          elif [ "$RUNNER_OS" == "Linux" ]; then
+            mkdir -p cube-collector-linux
+            cp target/release/cube_collector cube-collector-linux/cube_collector
+            zip -r cube-collector-linux-${{ steps.version.outputs.VERSION }}.zip cube-collector-linux
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            mkdir -p cube-collector-macos
+            cp target/release/cube_collector cube-collector-macos/cube_collector
+            zip -r cube-collector-macos-${{ steps.version.outputs.VERSION }}.zip cube-collector-macos
+          fi
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cube-collector-${{ matrix.os }}
+          path: cube-collector-*-${{ steps.version.outputs.VERSION }}.zip
+
+  release:
+    needs: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: release-files
+
+      - name: Publish to Tyxar-BLADE-Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: tyxar-lang/Tyxar-BLADE-Releases
+          token: ${{ secrets.RELEASES_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          name: Cube Collector ${{ github.ref_name }}
+          files: release-files/*.zip
+          fail_on_unmatched_files: true
