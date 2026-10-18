@@ -68,21 +68,21 @@ jobs:
     needs: Build
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+        contents: write # Changes to 'write' so the built-in token can create the release
 
     steps:
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
-          merge-multiple: true
-          path: release-files
+            merge-multiple: true
+            path: release-files
 
-      - name: Publish to Tyxar-BLADE-Releases
+      - name: Publish Release to this Repository
         uses: softprops/action-gh-release@v2
         with:
-          repository: tyxar-lang/Tyxar-BLADE-Releases
-          token: ${{ secrets.RELEASES_TOKEN }}
-          tag_name: ${{ github.ref_name }}
-          name: Cube Collector ${{ github.ref_name }}
-          files: release-files/*.zip
-          fail_on_unmatched_files: true
+            # Uses the built-in automatic GitHub token
+            token: ${{ secrets.GITHUB_TOKEN }}
+            tag_name: ${{ github.ref_name }}
+            name: Cube Collector ${{ github.ref_name }}
+            files: release-files/*.zip
+            fail_on_unmatched_files: true
