@@ -39,23 +39,22 @@ jobs:
           
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             mkdir -p cube-collector-windows
-            # Automatically find whatever .exe file was compiled inside release and copy it
             find game3d/target/release -maxdepth 1 -type f -name "*.exe" -exec cp {} cube-collector-windows/cube_collector.exe \;
             powershell -Command "Compress-Archive -Path cube-collector-windows -DestinationPath cube-collector-windows-${VERSION}.zip"
             
           elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
             mkdir -p cube-collector-linux
-            # Find the compiled Linux binary (files with executable permissions, excluding directories)
-            find game3d/target/release -maxdepth 1 -type f -executable -exec cp {} cube-collector-linux/cube_collector \;
+            find game3d/target/release -maxdepth 1 -type f ! -name "*.*" ! -name "lib*" -exec cp {} cube-collector-linux/cube_collector \;
             zip -r cube-collector-linux-${VERSION}.zip cube-collector-linux
             
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
             mkdir -p cube-collector-macos
-            # Find the compiled macOS binary
-            find game3d/target/release -maxdepth 1 -type f -permalink +111 ! -name "*.d" -exec cp {} cube-collector-macos/cube_collector \;
+            # BSD-compatible find that works perfectly on macOS
+            find game3d/target/release -maxdepth 1 -type f ! -name "*.*" ! -name "lib*" -exec cp {} cube-collector-macos/cube_collector \;
             zip -r cube-collector-macos-${VERSION}.zip cube-collector-macos
           fi
         shell: bash
+
 
 
 
